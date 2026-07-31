@@ -25,6 +25,25 @@ sqlcmd -S localhost -d RTD_DB -i database\seed.sql
 
 If SQL Server requires SQL authentication, add `-U your_user -P your_password`.
 
+If `seed.sql` reports invalid column names such as `current_status`, verify the actual table structure in `RTD_DB`:
+
+```sql
+USE [RTD_DB];
+GO
+
+SELECT DB_NAME() AS current_database;
+
+SELECT TABLE_NAME, COLUMN_NAME
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_SCHEMA = 'dbo'
+    AND TABLE_NAME IN ('Services', 'Events', 'LogAnalysis')
+ORDER BY TABLE_NAME, ORDINAL_POSITION;
+```
+
+If the expected columns are missing, rerun `database/schema.sql` against `RTD_DB` before running `database/seed.sql`. The schema script drops and recreates the three project tables.
+
+In Visual Studio or SSMS, stale IntelliSense can still show red errors after a successful run. Check the Messages tab after executing the script, then refresh IntelliSense or reopen the query window.
+
 ## 2. Start the Spring Boot API
 
 ```powershell
