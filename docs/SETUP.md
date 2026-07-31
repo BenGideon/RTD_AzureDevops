@@ -65,4 +65,48 @@ seed.sql sample events
   -> React Dashboard
 ```
 
-The Python processor will replace manual event seeding in its implementation phase.
+The Python processor flow is:
+
+```text
+python-service/logs/*.log
+  -> Python validator and processor
+  -> SQL Server Events and LogAnalysis tables
+  -> Spring Boot API
+  -> React Dashboard
+```
+
+## 5. Run the Python Log Processor
+
+Create a virtual environment and install dependencies:
+
+```powershell
+cd python-service
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+Create local configuration:
+
+```powershell
+copy .env.example .env
+```
+
+Update `.env` with your SQL Server settings, then generate a sample log:
+
+```powershell
+python sample_data_generator.py
+```
+
+Process all `.log` files in `python-service/logs`:
+
+```powershell
+python -m processor.log_processor
+```
+
+Verify records reached SQL Server:
+
+```powershell
+sqlcmd -S localhost -d RTD_AzureDevops -Q "SELECT TOP 20 * FROM dbo.Events ORDER BY [timestamp] DESC"
+sqlcmd -S localhost -d RTD_AzureDevops -Q "SELECT TOP 20 * FROM dbo.LogAnalysis ORDER BY processed_time DESC"
+```
