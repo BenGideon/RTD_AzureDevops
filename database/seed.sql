@@ -1,0 +1,2 @@
+-- SQL Server seed data placeholder.
+-- Initial service rows will be added in the database phase.

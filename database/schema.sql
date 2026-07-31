@@ -1,0 +1,2 @@
+-- SQL Server schema placeholder.
+-- Tables, constraints, and indexes will be added in the database phase.
