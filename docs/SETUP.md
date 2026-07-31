@@ -110,3 +110,26 @@ Verify records reached SQL Server:
 sqlcmd -S localhost -d RTD_AzureDevops -Q "SELECT TOP 20 * FROM dbo.Events ORDER BY [timestamp] DESC"
 sqlcmd -S localhost -d RTD_AzureDevops -Q "SELECT TOP 20 * FROM dbo.LogAnalysis ORDER BY processed_time DESC"
 ```
+
+## 6. Run Tests
+
+Backend:
+
+```powershell
+cd backend
+mvn test
+```
+
+Frontend:
+
+```powershell
+cd frontend
+npm test
+```
+
+Python:
+
+```powershell
+cd python-service
+python -m pytest
+```

@@ -33,6 +33,8 @@ __pycache__/
 *.py[cod]
 *.pyo
 .pytest_cache/
+.pytest_tmp/
+pytest-cache-files-*/
 .coverage
 htmlcov/
 .venv/

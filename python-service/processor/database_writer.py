@@ -1,8 +1,6 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-import pyodbc
-
 from validator.log_validator import ParsedLogEntry
 
 
@@ -17,8 +15,13 @@ class DatabaseWriter:
     def __init__(self, connection_string: str) -> None:
         self.connection_string = connection_string
 
+    def _connect(self):
+        import pyodbc
+
+        return pyodbc.connect(self.connection_string)
+
     def cleanup_old_events(self, retention_days: int) -> None:
-        with pyodbc.connect(self.connection_string) as connection:
+        with self._connect() as connection:
             cursor = connection.cursor()
             cursor.execute(
                 """
@@ -31,7 +34,7 @@ class DatabaseWriter:
 
     def insert_events(self, events: Iterable[EventRecord]) -> int:
         inserted = 0
-        with pyodbc.connect(self.connection_string) as connection:
+        with self._connect() as connection:
             cursor = connection.cursor()
             for event in events:
                 cursor.execute(
@@ -75,7 +78,7 @@ class DatabaseWriter:
         records_processed: int,
         errors_found: int,
     ) -> None:
-        with pyodbc.connect(self.connection_string) as connection:
+        with self._connect() as connection:
             cursor = connection.cursor()
             cursor.execute(
                 """

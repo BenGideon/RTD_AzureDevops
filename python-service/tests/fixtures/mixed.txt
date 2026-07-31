@@ -1,0 +1,3 @@
+INFO 2026-07-31 Service started
+ERROR 2026-07-31 Database failed
+bad line
