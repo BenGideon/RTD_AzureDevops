@@ -1,0 +1,124 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: windows-latest
+
+variables:
+  javaVersion: '17'
+  nodeVersion: '20.x'
+  pythonVersion: '3.11'
+
+stages:
+  - stage: BuildAndValidate
+    displayName: Build and validate
+    jobs:
+      - job: FullStackBuild
+        displayName: Full-stack build
+        steps:
+          - checkout: self
+
+          - task: JavaToolInstaller@0
+            displayName: Use Java $(javaVersion)
+            inputs:
+              versionSpec: $(javaVersion)
+              jdkArchitectureOption: x64
+              jdkSourceOption: PreInstalled
+
+          - task: NodeTool@0
+            displayName: Use Node.js $(nodeVersion)
+            inputs:
+              versionSpec: $(nodeVersion)
+
+          - task: UsePythonVersion@0
+            displayName: Use Python $(pythonVersion)
+            inputs:
+              versionSpec: $(pythonVersion)
+              addToPath: true
+
+          - task: Maven@4
+            displayName: Build backend
+            inputs:
+              mavenPomFile: backend/pom.xml
+              goals: clean package
+              options: -DskipTests=false
+              publishJUnitResults: true
+              testResultsFiles: '**/surefire-reports/TEST-*.xml'
+              javaHomeOption: Path
+              jdkDirectory: $(JAVA_HOME)
+              mavenVersionOption: Default
+
+          - script: npm ci
+            displayName: Install frontend dependencies
+            workingDirectory: frontend
+
+          - script: npm test
+            displayName: Test frontend
+            workingDirectory: frontend
+
+          - script: npm run build
+            displayName: Build frontend
+            workingDirectory: frontend
+
+          - script: python -m pip install --upgrade pip
+            displayName: Upgrade pip
+            workingDirectory: python-service
+
+          - script: pip install -r requirements.txt
+            displayName: Install Python dependencies
+            workingDirectory: python-service
+
+          - script: python -m pytest
+            displayName: Test Python service
+            workingDirectory: python-service
+
+          - task: CopyFiles@2
+            displayName: Stage backend artifact
+            inputs:
+              SourceFolder: backend/target
+              Contents: '*.jar'
+              TargetFolder: $(Build.ArtifactStagingDirectory)/backend
+
+          - task: CopyFiles@2
+            displayName: Stage frontend artifact
+            inputs:
+              SourceFolder: frontend/dist
+              Contents: '**'
+              TargetFolder: $(Build.ArtifactStagingDirectory)/frontend
+
+          - task: CopyFiles@2
+            displayName: Stage Python service artifact
+            inputs:
+              SourceFolder: python-service
+              Contents: |
+                **/*
+                !.env
+                !.venv/**
+                !logs/*.log
+                !**/__pycache__/**
+                !.pytest_cache/**
+              TargetFolder: $(Build.ArtifactStagingDirectory)/python-service
+
+          - task: CopyFiles@2
+            displayName: Stage database and docs
+            inputs:
+              SourceFolder: .
+              Contents: |
+                database/**
+                docs/**
+                README.md
+              TargetFolder: $(Build.ArtifactStagingDirectory)/support
+
+          - task: PublishBuildArtifacts@1
+            displayName: Publish build artifacts
+            inputs:
+              PathtoPublish: $(Build.ArtifactStagingDirectory)
+              ArtifactName: rtd-dashboard
+              publishLocation: Container
