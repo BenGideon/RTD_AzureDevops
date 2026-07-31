@@ -97,21 +97,21 @@ RTD_AzureDevops/
 Create the database:
 
 ```powershell
-sqlcmd -S localhost -Q "CREATE DATABASE RTD_AzureDevops"
+sqlcmd -S localhost -Q "CREATE DATABASE RTD_DB"
 ```
 
 Apply schema and seed data:
 
 ```powershell
-sqlcmd -S localhost -d RTD_AzureDevops -i database\schema.sql
-sqlcmd -S localhost -d RTD_AzureDevops -i database\seed.sql
+sqlcmd -S localhost -d RTD_DB -i database\schema.sql
+sqlcmd -S localhost -d RTD_DB -i database\seed.sql
 ```
 
 If SQL Server requires SQL authentication:
 
 ```powershell
-sqlcmd -S localhost -U your_user -P your_password -d RTD_AzureDevops -i database\schema.sql
-sqlcmd -S localhost -U your_user -P your_password -d RTD_AzureDevops -i database\seed.sql
+sqlcmd -S localhost -U your_user -P your_password -d RTD_DB -i database\schema.sql
+sqlcmd -S localhost -U your_user -P your_password -d RTD_DB -i database\seed.sql
 ```
 
 The schema creates:
@@ -127,7 +127,7 @@ Create local environment variables:
 ```powershell
 cd backend
 $env:SERVER_PORT="8080"
-$env:SPRING_DATASOURCE_URL="jdbc:sqlserver://localhost:1433;databaseName=RTD_AzureDevops;encrypt=true;trustServerCertificate=true"
+$env:SPRING_DATASOURCE_URL="jdbc:sqlserver://localhost:1433;databaseName=RTD_DB;encrypt=true;trustServerCertificate=true"
 $env:SPRING_DATASOURCE_USERNAME="your_user"
 $env:SPRING_DATASOURCE_PASSWORD="your_password"
 $env:CORS_ALLOWED_ORIGIN="http://localhost:3000,http://127.0.0.1:3000"
@@ -268,7 +268,7 @@ Configure `.env`:
 
 ```env
 DB_SERVER=localhost
-DB_NAME=RTD_AzureDevops
+DB_NAME=RTD_DB
 DB_USER=your_user
 DB_PASSWORD=your_password
 DB_DRIVER=ODBC Driver 18 for SQL Server

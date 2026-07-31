@@ -13,14 +13,14 @@
 Create the database once:
 
 ```powershell
-sqlcmd -S localhost -Q "CREATE DATABASE RTD_AzureDevops"
+sqlcmd -S localhost -Q "CREATE DATABASE RTD_DB"
 ```
 
 Apply schema and sample data:
 
 ```powershell
-sqlcmd -S localhost -d RTD_AzureDevops -i database\schema.sql
-sqlcmd -S localhost -d RTD_AzureDevops -i database\seed.sql
+sqlcmd -S localhost -d RTD_DB -i database\schema.sql
+sqlcmd -S localhost -d RTD_DB -i database\seed.sql
 ```
 
 If SQL Server requires SQL authentication, add `-U your_user -P your_password`.
@@ -29,7 +29,7 @@ If SQL Server requires SQL authentication, add `-U your_user -P your_password`.
 
 ```powershell
 cd backend
-$env:SPRING_DATASOURCE_URL="jdbc:sqlserver://localhost:1433;databaseName=RTD_AzureDevops;encrypt=true;trustServerCertificate=true"
+$env:SPRING_DATASOURCE_URL="jdbc:sqlserver://localhost:1433;databaseName=RTD_DB;encrypt=true;trustServerCertificate=true"
 $env:SPRING_DATASOURCE_USERNAME="your_user"
 $env:SPRING_DATASOURCE_PASSWORD="your_password"
 $env:CORS_ALLOWED_ORIGIN="http://localhost:3000,http://127.0.0.1:3000"
@@ -105,7 +105,7 @@ Update `.env` with your SQL Server settings, then generate a sample log:
 
 ```env
 DB_SERVER=localhost
-DB_NAME=RTD_AzureDevops
+DB_NAME=RTD_DB
 DB_USER=your_user
 DB_PASSWORD=your_password
 DB_DRIVER=ODBC Driver 18 for SQL Server
@@ -130,8 +130,8 @@ python -m processor.log_processor
 Verify records reached SQL Server:
 
 ```powershell
-sqlcmd -S localhost -d RTD_AzureDevops -Q "SELECT TOP 20 * FROM dbo.Events ORDER BY [timestamp] DESC"
-sqlcmd -S localhost -d RTD_AzureDevops -Q "SELECT TOP 20 * FROM dbo.LogAnalysis ORDER BY processed_time DESC"
+sqlcmd -S localhost -d RTD_DB -Q "SELECT TOP 20 * FROM dbo.Events ORDER BY [timestamp] DESC"
+sqlcmd -S localhost -d RTD_DB -Q "SELECT TOP 20 * FROM dbo.LogAnalysis ORDER BY processed_time DESC"
 ```
 
 ## 6. Run Tests

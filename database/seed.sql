@@ -1,7 +1,7 @@
 -- Sample records for local development.
 -- Run after database/schema.sql in the same database.
 
-USE [RTD_AzureDevops];
+USE [RTD_DB];
 GO
 
 IF OBJECT_ID(N'dbo.Services', N'U') IS NULL

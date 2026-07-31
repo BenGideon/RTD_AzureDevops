@@ -2,6 +2,9 @@
 -- This script creates the three core tables used by the backend API,
 -- dashboard, and Python log processor.
 
+USE [RTD_DB];
+GO
+
 IF OBJECT_ID('dbo.LogAnalysis', 'U') IS NOT NULL
     DROP TABLE dbo.LogAnalysis;
 
