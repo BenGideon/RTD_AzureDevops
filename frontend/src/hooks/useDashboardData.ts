@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getEvents, getServices } from '../api/client';
+import { config } from '../config';
 import type { ApplicationEvent, ServiceStatus } from '../types';
-
-const POLL_INTERVAL_MS = 30_000;
 
 interface DashboardData {
   services: ServiceStatus[];
@@ -38,7 +37,7 @@ export function useDashboardData(): DashboardData {
     void refresh();
     const intervalId = window.setInterval(() => {
       void refresh();
-    }, POLL_INTERVAL_MS);
+    }, config.pollIntervalMs);
 
     return () => window.clearInterval(intervalId);
   }, [refresh]);

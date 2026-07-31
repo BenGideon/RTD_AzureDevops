@@ -21,6 +21,7 @@ class Settings:
     default_service_name: str
     default_event_type: str
     retention_days: int
+    log_level: str
 
     @property
     def connection_string(self) -> str:
@@ -52,6 +53,28 @@ def _required(name: str) -> str:
     return value
 
 
+def _get_positive_int(name: str, default: int) -> int:
+    value = os.getenv(name)
+    if value is None:
+        return default
+
+    try:
+        parsed = int(value)
+    except ValueError as exc:
+        raise RuntimeError(f"{name} must be an integer") from exc
+
+    if parsed <= 0:
+        raise RuntimeError(f"{name} must be greater than zero")
+
+    return parsed
+
+
+def _get_log_dir() -> Path:
+    raw_value = os.getenv("LOG_DIR", "logs")
+    path = Path(raw_value)
+    return path if path.is_absolute() else BASE_DIR / path
+
+
 def load_settings() -> Settings:
     trusted_connection = _get_bool("DB_TRUSTED_CONNECTION")
 
@@ -62,8 +85,9 @@ def load_settings() -> Settings:
         db_password="" if trusted_connection else _required("DB_PASSWORD"),
         db_driver=os.getenv("DB_DRIVER", "ODBC Driver 18 for SQL Server"),
         db_trusted_connection=trusted_connection,
-        log_dir=BASE_DIR / os.getenv("LOG_DIR", "logs"),
+        log_dir=_get_log_dir(),
         default_service_name=os.getenv("DEFAULT_SERVICE_NAME", "application-log"),
         default_event_type=os.getenv("DEFAULT_EVENT_TYPE", "LOG_ENTRY"),
-        retention_days=int(os.getenv("RETENTION_DAYS", "30")),
+        retention_days=_get_positive_int("RETENTION_DAYS", 30),
+        log_level=os.getenv("LOG_LEVEL", "INFO"),
     )

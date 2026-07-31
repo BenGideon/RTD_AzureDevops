@@ -33,6 +33,7 @@ $env:SPRING_DATASOURCE_URL="jdbc:sqlserver://localhost:1433;databaseName=RTD_Azu
 $env:SPRING_DATASOURCE_USERNAME="your_user"
 $env:SPRING_DATASOURCE_PASSWORD="your_password"
 $env:CORS_ALLOWED_ORIGIN="http://localhost:3000,http://127.0.0.1:3000"
+$env:SERVER_PORT="8080"
 mvn spring-boot:run
 ```
 
@@ -53,6 +54,14 @@ npm run dev
 ```
 
 Open `http://localhost:3000`.
+
+Frontend configuration is loaded from `frontend/.env.local`:
+
+```env
+VITE_API_URL=http://localhost:8080
+VITE_POLL_INTERVAL_MS=30000
+VITE_EVENTS_PAGE_SIZE=50
+```
 
 ## 4. Integration Flow
 
@@ -93,6 +102,20 @@ copy .env.example .env
 ```
 
 Update `.env` with your SQL Server settings, then generate a sample log:
+
+```env
+DB_SERVER=localhost
+DB_NAME=RTD_AzureDevops
+DB_USER=your_user
+DB_PASSWORD=your_password
+DB_DRIVER=ODBC Driver 18 for SQL Server
+DB_TRUSTED_CONNECTION=false
+LOG_DIR=logs
+DEFAULT_SERVICE_NAME=application-log
+DEFAULT_EVENT_TYPE=LOG_ENTRY
+RETENTION_DAYS=30
+LOG_LEVEL=INFO
+```
 
 ```powershell
 python sample_data_generator.py

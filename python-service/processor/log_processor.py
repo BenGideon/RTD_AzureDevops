@@ -1,4 +1,4 @@
-from datetime import datetime
+import logging
 from pathlib import Path
 import sys
 
@@ -6,12 +6,23 @@ from config.config import load_settings
 from processor.database_writer import DatabaseWriter, EventRecord
 from validator.log_validator import parse_line
 
+LOGGER = logging.getLogger(__name__)
+
+
+def _configure_logging(log_dir: Path, log_level: str) -> None:
+    log_dir.mkdir(parents=True, exist_ok=True)
+    logging.basicConfig(
+        level=getattr(logging, log_level.upper(), logging.INFO),
+        format="%(asctime)s %(levelname)s %(message)s",
+        handlers=[
+            logging.FileHandler(log_dir / "scheduler.log", encoding="utf-8"),
+            logging.StreamHandler(),
+        ],
+    )
+
 
 def _write_scheduler_log(log_dir: Path, message: str) -> None:
-    log_dir.mkdir(parents=True, exist_ok=True)
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with (log_dir / "scheduler.log").open("a", encoding="utf-8") as log_file:
-        log_file.write(f"{timestamp} {message}\n")
+    LOGGER.info(message)
 
 
 def _read_log_file(path: Path, default_service_name: str, default_event_type: str) -> tuple[list[EventRecord], int]:
@@ -23,6 +34,7 @@ def _read_log_file(path: Path, default_service_name: str, default_event_type: st
             parsed = parse_line(line)
             if parsed is None:
                 errors_found += 1
+                LOGGER.warning("%s:%s invalid log entry skipped", path.name, line_number)
                 continue
 
             events.append(
@@ -37,7 +49,14 @@ def _read_log_file(path: Path, default_service_name: str, default_event_type: st
 
 
 def process_logs() -> int:
-    settings = load_settings()
+    try:
+        settings = load_settings()
+    except RuntimeError as exc:
+        logging.basicConfig(level=logging.ERROR, format="%(asctime)s %(levelname)s %(message)s")
+        LOGGER.error("Configuration error: %s", exc)
+        return 1
+
+    _configure_logging(settings.log_dir, settings.log_level)
     settings.log_dir.mkdir(parents=True, exist_ok=True)
     log_files = sorted(
         path for path in settings.log_dir.glob("*.log") if path.name != "scheduler.log"
@@ -51,8 +70,8 @@ def process_logs() -> int:
 
     try:
         writer.cleanup_old_events(settings.retention_days)
-    except Exception as exc:
-        _write_scheduler_log(settings.log_dir, f"Database cleanup failed: {exc}")
+    except Exception:
+        LOGGER.exception("Database cleanup failed")
         return 1
 
     for log_file in log_files:
@@ -65,8 +84,8 @@ def process_logs() -> int:
         try:
             inserted = writer.insert_events(events)
             writer.write_log_analysis(log_file.name, len(events), errors_found)
-        except Exception as exc:
-            _write_scheduler_log(settings.log_dir, f"{log_file.name}: database write failed: {exc}")
+        except Exception:
+            LOGGER.exception("%s: database write failed", log_file.name)
             return 1
 
         _write_scheduler_log(

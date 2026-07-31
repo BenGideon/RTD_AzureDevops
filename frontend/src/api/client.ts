@@ -1,12 +1,11 @@
 import type { ApplicationEvent, PageResponse, ServiceStatus } from '../types';
-
-const apiBaseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
+import { config } from '../config';
 
 async function getJson<T>(path: string): Promise<T> {
-  const response = await fetch(`${apiBaseUrl}${path}`);
+  const response = await fetch(`${config.apiBaseUrl}${path}`);
 
   if (!response.ok) {
-    throw new Error(`API request failed with status ${response.status}`);
+    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
   }
 
   return response.json() as Promise<T>;
@@ -17,5 +16,5 @@ export function getServices(): Promise<ServiceStatus[]> {
 }
 
 export function getEvents(): Promise<PageResponse<ApplicationEvent>> {
-  return getJson<PageResponse<ApplicationEvent>>('/api/events?page=0&size=50');
+  return getJson<PageResponse<ApplicationEvent>>(`/api/events?page=0&size=${config.eventsPageSize}`);
 }
