@@ -25,13 +25,6 @@ stages:
         steps:
           - checkout: self
 
-          - task: JavaToolInstaller@0
-            displayName: Use Java $(javaVersion)
-            inputs:
-              versionSpec: $(javaVersion)
-              jdkArchitectureOption: x64
-              jdkSourceOption: PreInstalled
-
           - task: NodeTool@0
             displayName: Use Node.js $(nodeVersion)
             inputs:
@@ -51,8 +44,8 @@ stages:
               options: -DskipTests=false
               publishJUnitResults: true
               testResultsFiles: '**/surefire-reports/TEST-*.xml'
-              javaHomeOption: Path
-              jdkDirectory: $(JAVA_HOME)
+              javaHomeOption: JDKVersion
+              jdkVersionOption: default
               mavenVersionOption: Default
 
           - script: npm ci
