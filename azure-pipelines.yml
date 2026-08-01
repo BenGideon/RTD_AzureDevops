@@ -41,7 +41,7 @@ stages:
             inputs:
               mavenPomFile: backend/pom.xml
               goals: clean package
-              options: -DskipTests=false
+              options: -DskipTests=false -Dnet.bytebuddy.experimental=true
               publishJUnitResults: true
               testResultsFiles: '**/surefire-reports/TEST-*.xml'
               javaHomeOption: JDKVersion
